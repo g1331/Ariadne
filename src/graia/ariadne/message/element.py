@@ -1,4 +1,5 @@
 """Ariadne 中的消息元素"""
+
 from base64 import b64decode, b64encode
 from datetime import datetime
 from enum import Enum
@@ -81,7 +82,7 @@ class Element(AriadneBaseModel, BaseElement):
         if isinstance(content, Element):
             content = [content]
         if isinstance(content, MessageChain):
-            content = content.__root__
+            content = content.content
         return MessageChain(content + [self], inline=True)
 
     def __radd__(self, content: Union["MessageChain", List["Element"], "Element", str]) -> "MessageChain":
@@ -92,7 +93,7 @@ class Element(AriadneBaseModel, BaseElement):
         if isinstance(content, Element):
             content = [content]
         if isinstance(content, MessageChain):
-            content = content.__root__
+            content = content.content
         return MessageChain([self] + content, inline=True)
 
 
@@ -110,7 +111,8 @@ class Plain(Element, BaseText):
         Args:
             text (str): 元素所包含的文字
         """
-        super().__init__(text=text)  # type: ignore
+        # 为BaseText提供默认的style参数
+        super().__init__(text=text, style=None, **kwargs)  # type: ignore
 
     def __str__(self) -> str:
         return self.text
@@ -217,7 +219,7 @@ class MarketFace(Element):
 class Xml(Element):
     """表示消息中的 XML 消息元素"""
 
-    type = "Xml"
+    type: str = "Xml"
 
     xml: str
     """XML文本"""
@@ -232,7 +234,7 @@ class Xml(Element):
 class Json(Element):
     """表示消息中的 JSON 消息元素"""
 
-    type = "Json"
+    type: str = "Json"
 
     Json: str = Field(None, alias="json")
     """JSON 文本"""
@@ -249,7 +251,7 @@ class Json(Element):
 class App(Element):
     """表示消息中自带的 App 消息元素"""
 
-    type = "App"
+    type: str = "App"
 
     content: str
     """App 内容"""
@@ -323,7 +325,7 @@ class PokeMethods(str, Enum):
 class Poke(Element):
     """表示消息中戳一戳消息元素"""
 
-    type = "Poke"
+    type: str = "Poke"
 
     name: PokeMethods
     """戳一戳使用的方法"""
@@ -338,7 +340,7 @@ class Poke(Element):
 class Dice(Element):
     """表示消息中骰子消息元素"""
 
-    type = "Dice"
+    type: str = "Dice"
 
     value: int
     """骰子值"""
@@ -372,7 +374,7 @@ class MusicShareKind(str, Enum):
 class MusicShare(Element):
     """表示消息中音乐分享消息元素"""
 
-    type = "MusicShare"
+    type: str = "MusicShare"
 
     kind: MusicShareKind
     """音乐分享的来源"""
@@ -509,7 +511,7 @@ class Forward(Element):
     nodeList (List[ForwardNode]): 转发的消息节点
     """
 
-    type = "Forward"
+    type: str = "Forward"
 
     node_list: List[ForwardNode] = Field(default_factory=list, alias="nodeList")
     """转发节点列表"""
@@ -559,7 +561,7 @@ class Forward(Element):
     @classmethod
     def parse_obj(cls, obj: Any) -> Self:
         if isinstance(obj, list):
-            return cls([ForwardNode.parse_obj(o) for o in obj])
+            return cls([ForwardNode.model_validate(o) for o in obj])
         return cls(**obj)
 
     @overload
@@ -578,7 +580,7 @@ class Forward(Element):
 class File(Element):
     """指示一个文件信息元素"""
 
-    type = "File"
+    type: str = "File"
 
     id: str
     """文件 ID"""
@@ -599,7 +601,7 @@ class File(Element):
 class MiraiCode(Element):
     """Mirai 码, 并不建议直接使用. Ariadne 也不会提供互转换接口."""
 
-    type = "MiraiCode"
+    type: str = "MiraiCode"
 
     code: str
     """Mirai Code"""
@@ -734,7 +736,7 @@ class MultimediaElement(Element):
 class Image(MultimediaElement):
     """指示消息中的图片元素"""
 
-    type = "Image"
+    type: str = "Image"
 
     id: Optional[str] = Field(None, alias="imageId")
 
@@ -774,7 +776,7 @@ class Image(MultimediaElement):
 class FlashImage(Image):
     """指示消息中的闪照元素"""
 
-    type = "FlashImage"
+    type: str = "FlashImage"
 
     def __init__(
         self,
@@ -812,7 +814,7 @@ class FlashImage(Image):
 class Voice(MultimediaElement):
     """指示消息中的语音元素"""
 
-    type = "Voice"
+    type: str = "Voice"
 
     id: Optional[str] = Field(None, alias="voiceId")
 
@@ -846,5 +848,5 @@ def _update_forward_refs():
 
     graia.amnesia.message.__message_chain_class__ = MessageChain
     graia.amnesia.message.__text_element_class__ = Plain
-    Quote.update_forward_refs(MessageChain=MessageChain)
-    ForwardNode.update_forward_refs(MessageChain=MessageChain)
+    Quote.model_rebuild()
+    ForwardNode.model_rebuild()

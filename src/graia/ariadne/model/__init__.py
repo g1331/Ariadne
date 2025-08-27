@@ -1,10 +1,11 @@
 """Ariadne 各种 model 存放的位置"""
+
 import functools
 from datetime import datetime
 from typing import TYPE_CHECKING, Awaitable, Callable, Dict, Literal, Optional, Type, Union
 
 from loguru import logger
-from pydantic import Field, validator
+from pydantic import Field, field_validator
 
 from ..util import gen_subclass, internal_cls
 
@@ -159,14 +160,15 @@ class FileInfo(AriadneBaseModel):
     download_info: Optional[DownloadInfo] = Field(None, alias="downloadInfo")
     """下载信息"""
 
-    @validator("contact", pre=True, allow_reuse=True)
+    @field_validator("contact", mode="before")
+    @classmethod
     def _(cls, val: Optional[dict]):
         if not val:
             return None
-        return Friend.parse_obj(val) if "remark" in val else Group.parse_obj(val)
+        return Friend.model_validate(val) if "remark" in val else Group.model_validate(val)
 
 
-FileInfo.update_forward_refs(FileInfo=FileInfo)
+FileInfo.model_rebuild()
 
 
 @internal_cls()

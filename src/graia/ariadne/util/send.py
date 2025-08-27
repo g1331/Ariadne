@@ -1,4 +1,5 @@
 """本模块包含许多用于 Ariadne.SendMessage 的 action 函数"""
+
 from typing import Optional, TypeVar, Union, overload
 
 from ..app import Ariadne
@@ -77,9 +78,9 @@ class Safe(SendMessageAction):
         ariadne = Ariadne.current()
 
         def convert(msg_chain: MessageChain, type) -> None:
-            for ind, elem in enumerate(msg_chain.__root__[:]):
+            for ind, elem in enumerate(msg_chain.content[:]):
                 if isinstance(elem, type):
-                    msg_chain.__root__[ind] = Plain(elem.display)
+                    msg_chain.content[ind] = Plain(elem.display)
 
         for type in [AtAll, At, Poke, Forward, MultimediaElement]:
             convert(chain, type)

@@ -91,7 +91,7 @@ def build_event(data: dict) -> MiraiEvent:
         logger.error("An event is not recognized! Please report with your log to help us diagnose.")
         raise ValueError(f"Unable to find event: {event_type}", data)
     data = {k: v for k, v in data.items() if k != "type"}
-    return event_class.parse_obj(data)
+    return event_class.model_validate(data)
 
 
 class CallMethod(str, Enum):

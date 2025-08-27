@@ -1,4 +1,5 @@
 """Ariadne 消息链的实现"""
+
 import re
 from copy import deepcopy
 from typing import (
@@ -43,7 +44,9 @@ if TYPE_CHECKING:
 Element_T = TypeVar("Element_T", bound=Element)
 
 ELEMENT_MAPPING: Dict[str, Type[Element]] = {
-    i.__fields__["type"].default: i for i in gen_subclass(Element) if hasattr(i.__fields__["type"], "default")
+    i.model_fields["type"].default: i
+    for i in gen_subclass(Element)
+    if hasattr(i.model_fields["type"], "default")
 }
 ORDINARY_ELEMENT_TYPES = frozenset([Plain, Image, Face, At, AtAll, Source, Quote])
 
@@ -57,13 +60,13 @@ class MessageChain(BaseMessageChain, AriadneBaseModel):
     即 "消息链", 被用于承载整个消息内容的数据结构, 包含有一有序列表, 包含有元素实例.
     """
 
-    __root__: List[Element]
+    content: List[Any]
     """底层元素列表"""
 
     @property
-    def content(self) -> List[Element]:
-        """Amnesia MessageChain 的内容代理"""
-        return self.__root__
+    def root(self) -> List[Element]:
+        """Pydantic 2.x 兼容的根字段代理"""
+        return self.content
 
     @staticmethod
     def build_chain(obj: Union[List[Dict], MessageContainer]) -> List[Element]:
@@ -80,13 +83,26 @@ class MessageChain(BaseMessageChain, AriadneBaseModel):
             return deepcopy(obj.content)
         if isinstance(obj, Element):
             return [obj]
+        # 检查是否是AriadneBaseModel实例（如Source、Quote等）
+        from ..model.util import AriadneBaseModel
+
+        if isinstance(obj, AriadneBaseModel):
+            return [obj]
         if isinstance(obj, str):
             return [Plain(obj)]
+        # 检查是否可迭代，但排除字符串和字节
+        try:
+            iter(obj)
+            if isinstance(obj, (str, bytes)):
+                raise TypeError
+        except TypeError:
+            # 如果不可迭代，跳过这个对象
+            return []
         element_list: List[Element] = []
         for o in obj:
             if isinstance(o, dict):
                 if typ := ELEMENT_MAPPING.get(o.get("type", "Unknown")):
-                    element_list.append(typ.parse_obj(o))
+                    element_list.append(typ.model_validate(o))
             else:
                 element_list.extend(MessageChain.build_chain(o))
 
@@ -109,7 +125,7 @@ class MessageChain(BaseMessageChain, AriadneBaseModel):
         return cls(cls.build_chain(obj), inline=True)
 
     @overload
-    def __init__(self, __root__: Sequence[Element], *, inline: Literal[True]) -> None:
+    def __init__(self, root: Sequence[Element], *, inline: Literal[True]) -> None:
         ...
 
     @overload
@@ -118,7 +134,7 @@ class MessageChain(BaseMessageChain, AriadneBaseModel):
 
     def __init__(
         self,
-        __root__: MessageContainer,
+        root: MessageContainer,
         *elements: MessageContainer,
         inline: bool = False,
     ) -> None:
@@ -136,11 +152,11 @@ class MessageChain(BaseMessageChain, AriadneBaseModel):
         if not inline:
             AriadneBaseModel.__init__(
                 self,
-                __root__=self.build_chain((__root__, *elements)),
+                content=self.build_chain((root, *elements)),
             )
         else:
-            AriadneBaseModel.__init__(self, __root__=[])
-            self.__root__ = __root__  # type: ignore
+            AriadneBaseModel.__init__(self, content=[])
+            self.content = root  # type: ignore
 
     def __repr_args__(self) -> "ReprArgs":
         return [(None, list(self.content))]
@@ -181,12 +197,20 @@ class MessageChain(BaseMessageChain, AriadneBaseModel):
         return super().__getitem__(item)
 
     def as_sendable(self) -> Self:
-        """将消息链转换为可发送形式 (去除 File)
+        """将消息链转换为可发送形式 (去除 File, Source, Quote)
 
         Returns:
             MessageChain: 转换后的消息链.
         """
-        return self.exclude(File)
+        from . import Quote, Source
+
+        # 过滤掉File、Source和Quote元素
+        filtered_content = []
+        for elem in self.content:
+            if not isinstance(elem, (File, Source, Quote)):
+                filtered_content.append(elem)
+
+        return MessageChain(filtered_content, inline=True)
 
     def get(self, element_class: Type[Element_T], count: int = -1) -> List[Element_T]:
         res = super().get(element_class, count)
@@ -257,7 +281,10 @@ class MessageChain(BaseMessageChain, AriadneBaseModel):
                 if isinstance(i, Plain):
                     string_list.append(i.as_persistent_string().replace("[", "[_"))
                 elif not isinstance(i, MultimediaElement):
-                    string_list.append(i.as_persistent_string())
+                    # 检查是否有as_persistent_string方法
+                    if hasattr(i, "as_persistent_string"):
+                        string_list.append(i.as_persistent_string())
+                    # 对于Source、Quote等没有此方法的对象，跳过
                 else:
                     string_list.append(i.as_persistent_string(binary=binary))
         return "".join(string_list)
@@ -281,7 +308,13 @@ class MessageChain(BaseMessageChain, AriadneBaseModel):
             if mirai := re.fullmatch(r"\[mirai:(.+?)(:(.+?))\]", match):
                 j_string = mirai[3]
                 element_cls = ELEMENT_MAPPING[mirai[1]]
-                result.append(element_cls.parse_obj(Json.deserialize(unescape_bracket(j_string))))
+                data = Json.deserialize(unescape_bracket(j_string))
+
+                # Forward元素的特殊处理：数据是节点列表，需要包装为字典
+                if mirai[1] == "Forward" and isinstance(data, list):
+                    data = {"nodeList": data}
+
+                result.append(element_cls.model_validate(data))
             elif match:
                 result.append(Plain(match.replace("[_", "[")))
         return MessageChain(result, inline=True)

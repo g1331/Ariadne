@@ -1,4 +1,5 @@
 """Ariadne 基础的 parser, 包括 DetectPrefix 与 DetectSuffix"""
+
 import abc
 import difflib
 import fnmatch
@@ -96,7 +97,7 @@ class MentionMe(ChainDecorator):
         if isinstance(name, str) and isinstance(first, Plain) and str(first).startswith(name):
             return chain.removeprefix(name).removeprefix(" ")
         if isinstance(first, At) and first.target == ariadne.account:
-            return MessageChain(chain.__root__[1:], inline=True).removeprefix(" ")
+            return MessageChain(chain.content[1:], inline=True).removeprefix(" ")
         raise ExecutionStop
 
 
@@ -121,7 +122,7 @@ class Mention(ChainDecorator):
         ):
             return chain.removeprefix(self.person).removeprefix(" ")
         if isinstance(first, At) and isinstance(self.person, int) and first.target == self.person:
-            return MessageChain(chain.__root__[1:], inline=True).removeprefix(" ")
+            return MessageChain(chain.content[1:], inline=True).removeprefix(" ")
 
         raise ExecutionStop
 

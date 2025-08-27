@@ -1,5 +1,6 @@
 """Ariadne 消息事件"""
-from typing import Any, Dict, List, Optional, Union
+
+from typing import Any, ClassVar, Dict, List, Optional, Union
 
 from pydantic import Field, root_validator
 
@@ -237,7 +238,7 @@ class ActiveStrangerMessage(ActiveMessage):
 class SyncMessage(MiraiEvent):
     """同步消息：从其他客户端同步的主动消息"""
 
-    sync = True
+    sync: ClassVar[bool] = True
 
 
 class FriendSyncMessage(SyncMessage, ActiveFriendMessage):

@@ -1,8 +1,9 @@
 """本模块提供 Ariadne 消息相关部件."""
+
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from pydantic import Field, validator
+from pydantic import Field, field_validator
 
 from ..model.util import AriadneBaseModel
 from ..util import internal_cls
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
 class Source(AriadneBaseModel):
     """表示消息在一个特定聊天区域内的唯一标识"""
 
-    type = "Source"
+    type: str = "Source"
 
     id: int
     """消息 ID"""
@@ -41,7 +42,7 @@ class Source(AriadneBaseModel):
 class Quote(AriadneBaseModel):
     """表示消息中回复其他消息/用户的部分, 通常包含一个完整的消息链(`origin` 属性)"""
 
-    type = "Quote"
+    type: str = "Quote"
 
     id: int
     """引用的消息 ID"""
@@ -58,7 +59,8 @@ class Quote(AriadneBaseModel):
     origin: "MessageChain"
     """原来的消息链"""
 
-    @validator("origin", pre=True, allow_reuse=True)
+    @field_validator("origin", mode="before")
+    @classmethod
     def _(cls, v):
         from .chain import MessageChain
 

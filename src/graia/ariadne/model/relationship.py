@@ -52,7 +52,7 @@ class Group(AriadneBaseModel):
     account_perm: MemberPerm = Field(..., alias="permission")
     """你在群中的权限"""
 
-    __kind: Optional[Literal["Group"]] = Field(None, alias="kind")
+    kind_: Optional[Literal["Group"]] = Field(None, alias="kind")
 
     def __int__(self):
         return self.id
@@ -211,7 +211,7 @@ class Friend(AriadneBaseModel):
     remark: str
     """自行设置的代称"""
 
-    __kind: Optional[Literal["Friend"]] = Field(None, alias="kind")
+    kind_: Optional[Literal["Friend"]] = Field(None, alias="kind")
 
     def __int__(self):
         return self.id
@@ -261,7 +261,7 @@ class Stranger(AriadneBaseModel):
     remark: str
     """自行设置的代称"""
 
-    __kind: Optional[Literal["Stranger"]] = Field(None, alias="kind")
+    kind_: Optional[Literal["Stranger"]] = Field(None, alias="kind")
 
     def __int__(self):
         return self.id
@@ -335,4 +335,4 @@ class Client(AriadneBaseModel):
     platform: str
     """平台字符串表示"""
 
-    __kind: Optional[Literal["OtherClient"]] = Field(None, alias="kind")
+    kind_: Optional[Literal["OtherClient"]] = Field(None, alias="kind")

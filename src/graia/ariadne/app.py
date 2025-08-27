@@ -452,7 +452,7 @@ class Ariadne:
                 "size": size,
             },
         )
-        return [FileInfo.parse_obj(i) for i in result]
+        return [FileInfo.model_validate(i) for i in result]
 
     @ariadne_api
     async def get_file_info(
@@ -489,7 +489,7 @@ class Ariadne:
             },
         )
 
-        return FileInfo.parse_obj(result)
+        return FileInfo.model_validate(result)
 
     @ariadne_api
     async def make_directory(
@@ -526,7 +526,7 @@ class Ariadne:
             },
         )
 
-        return FileInfo.parse_obj(result)
+        return FileInfo.model_validate(result)
 
     @ariadne_api
     async def delete_file(
@@ -677,7 +677,7 @@ class Ariadne:
             },
         )
 
-        return FileInfo.parse_obj(result)
+        return FileInfo.model_validate(result)
 
     @ariadne_api
     async def upload_image(
@@ -708,7 +708,7 @@ class Ariadne:
             },
         )
 
-        return Image.parse_obj(result)
+        return Image.model_validate(result)
 
     @ariadne_api
     async def upload_voice(
@@ -739,7 +739,7 @@ class Ariadne:
             },
         )
 
-        return Voice.parse_obj(result)
+        return Voice.model_validate(result)
 
     async def get_announcement_iterator(
         self,
@@ -797,7 +797,7 @@ class Ariadne:
             },
         )
 
-        return [Announcement.parse_obj(announcement) for announcement in result]
+        return [Announcement.model_validate(announcement) for announcement in result]
 
     @ariadne_api
     async def publish_announcement(
@@ -857,7 +857,7 @@ class Ariadne:
             CallMethod.POST,
             data,
         )
-        return Announcement.parse_obj(result)
+        return Announcement.model_validate(result)
 
     @ariadne_api
     async def delete_announcement(self, target: Union[Group, int], anno: Union[Announcement, int]) -> None:
@@ -1112,7 +1112,7 @@ class Ariadne:
             },
         )
 
-        return GroupConfig.parse_obj({camel_to_snake(k): v for k, v in result.items()})
+        return GroupConfig.model_validate({camel_to_snake(k): v for k, v in result.items()})
 
     @ariadne_api
     async def modify_group_config(self, group: Union[Group, int], config: GroupConfig) -> None:
@@ -1264,7 +1264,7 @@ class Ariadne:
             List[Friend]: 添加的好友.
         """
         result = [
-            Friend.parse_obj(i)
+            Friend.model_validate(i)
             for i in await self.connection.call(
                 "friendList",
                 CallMethod.GET,
@@ -1347,7 +1347,7 @@ class Ariadne:
             List[Group]: 加入的群组.
         """
         result = [
-            Group.parse_obj(i)
+            Group.model_validate(i)
             for i in await self.connection.call(
                 "groupList",
                 CallMethod.GET,
@@ -1436,7 +1436,7 @@ class Ariadne:
         group_id = int(group)
 
         result = [
-            Member.parse_obj(i)
+            Member.model_validate(i)
             for i in await (
                 self.connection.call(
                     "memberList",
@@ -1490,7 +1490,7 @@ class Ariadne:
         if cache and (member := await interface.get(key)):
             return member
 
-        result = Member.parse_obj(
+        result = Member.model_validate(
             await self.connection.call(
                 "memberInfo",
                 CallMethod.RESTGET,
@@ -1520,7 +1520,7 @@ class Ariadne:
             CallMethod.GET,
             {},
         )
-        return Profile.parse_obj(result)
+        return Profile.model_validate(result)
 
     @ariadne_api
     async def get_user_profile(self, target: Union[int, Friend, Member, Stranger]) -> Profile:
@@ -1539,7 +1539,7 @@ class Ariadne:
                 "target": int(target),
             },
         )
-        return Profile.parse_obj(result)
+        return Profile.model_validate(result)
 
     @ariadne_api
     async def get_friend_profile(self, friend: Union[Friend, int]) -> Profile:
@@ -1558,7 +1558,7 @@ class Ariadne:
                 "target": int(friend),
             },
         )
-        return Profile.parse_obj(result)
+        return Profile.model_validate(result)
 
     @ariadne_api
     async def get_member_profile(
@@ -1590,7 +1590,7 @@ class Ariadne:
                 "memberId": member_id,
             },
         )
-        return Profile.parse_obj(result)
+        return Profile.model_validate(result)
 
     @ariadne_api
     async def get_message_from_id(
@@ -2119,4 +2119,4 @@ class Ariadne:
             },
         )
 
-        return [FriendMessage.parse_obj(i) for i in result]
+        return [FriendMessage.model_validate(i) for i in result]

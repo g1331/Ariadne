@@ -290,7 +290,7 @@ def split(chain: MessageChain) -> ChainContentList:
     quote: str = ""
     buffer: ChainContent = []
 
-    for elem in chain.__root__:
+    for elem in chain.content:
         if elem.__class__ in (Quote, Source):
             continue
         if not isinstance(elem, Plain):

@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Union
 
-from pydantic import Field, root_validator
+from pydantic import Field, model_validator
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher as AbstractDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
@@ -50,7 +50,7 @@ class BotOnlineEvent(BotEvent):
         只有使用 ReverseAdapter 时才有可能接受到此事件
     """
 
-    type = "BotOnlineEvent"
+    type: str = "BotOnlineEvent"
 
     qq: int
     """登录成功的 Bot 的 QQ 号"""
@@ -66,7 +66,7 @@ class BotOfflineEventActive(BotEvent):
         - Ariadne (annotation): 发布事件的应用实例
     """
 
-    type = "BotOfflineEventActive"
+    type: str = "BotOfflineEventActive"
 
     qq: int
     """主动离线的 Bot 的 QQ 号"""
@@ -82,7 +82,7 @@ class BotOfflineEventForce(BotEvent):
         - Ariadne (annotation): 发布事件的应用实例
     """
 
-    type = "BotOfflineEventForce"
+    type: str = "BotOfflineEventForce"
 
     qq: int
     """被挤下线的 Bot 的 QQ 号"""
@@ -98,7 +98,7 @@ class BotOfflineEventDropped(BotEvent):
         - Ariadne (annotation): 发布事件的应用实例
     """
 
-    type = "BotOfflineEventDropped"
+    type: str = "BotOfflineEventDropped"
 
     qq: int
     """被服务器断开或因网络问题而掉线的 Bot 的 QQ 号"""
@@ -114,7 +114,7 @@ class BotReloginEvent(BotEvent):
         - Ariadne (annotation): 发布事件的应用实例
     """
 
-    type = "BotReloginEvent"
+    type: str = "BotReloginEvent"
 
     qq: int
     """主动重新登录的 Bot 的 QQ 号"""
@@ -130,7 +130,7 @@ class FriendInputStatusChangedEvent(FriendEvent):
         - Ariadne (annotation): 发布事件的应用实例
     """
 
-    type = "FriendInputStatusChangedEvent"
+    type: str = "FriendInputStatusChangedEvent"
 
     friend: Friend
     """好友信息"""
@@ -152,7 +152,7 @@ class FriendNickChangedEvent(FriendEvent):
         - Friend (annotation): 更改名称的好友
     """
 
-    type = "FriendNickChangedEvent"
+    type: str = "FriendNickChangedEvent"
 
     friend: Friend
     """好友信息"""
@@ -165,7 +165,8 @@ class FriendNickChangedEvent(FriendEvent):
 
     Dispatcher = FriendDispatcher
 
-    @root_validator
+    @model_validator(mode="before")
+    @classmethod
     def _(cls, values: Dict[str, Any]):
         values["friend"].nickname = values["to_name"]
         return values
@@ -182,7 +183,7 @@ class BotGroupPermissionChangeEvent(GroupEvent, BotEvent):
         - Group (annotation): 发生该事件的群组
     """
 
-    type = "BotGroupPermissionChangeEvent"
+    type: str = "BotGroupPermissionChangeEvent"
 
     origin: MemberPerm
     """原始权限"""
@@ -208,7 +209,7 @@ class BotMuteEvent(GroupEvent, BotEvent):
         - Group (annotation): 发生该事件的群组
     """
 
-    type = "BotMuteEvent"
+    type: str = "BotMuteEvent"
 
     duration: int = Field(..., alias="durationSeconds")
     """禁言时长, 单位为秒"""
@@ -231,7 +232,7 @@ class BotUnmuteEvent(GroupEvent, BotEvent):
         - Group (annotation): 发生该事件的群组
     """
 
-    type = "BotUnmuteEvent"
+    type: str = "BotUnmuteEvent"
 
     operator: Member
     """操作的管理员或群主信息"""
@@ -251,7 +252,7 @@ class BotJoinGroupEvent(GroupEvent, BotEvent):
         - Member (annotation, optional): 邀请者, 可以为 None
     """
 
-    type = "BotJoinGroupEvent"
+    type: str = "BotJoinGroupEvent"
 
     group: Group
     """Bot 新加入群的信息"""
@@ -340,7 +341,7 @@ class GroupRecallEvent(GroupEvent):
         - Group (annotation): 发生该事件的群组
     """
 
-    type = "GroupRecallEvent"
+    type: str = "GroupRecallEvent"
 
     author_id: int = Field(..., alias="authorId")
     """原消息发送者的 QQ 号"""
@@ -371,7 +372,7 @@ class FriendRecallEvent(FriendEvent):
         - Ariadne (annotation): 发布事件的应用实例
     """
 
-    type = "FriendRecallEvent"
+    type: str = "FriendRecallEvent"
 
     author_id: int = Field(..., alias="authorId")
     """原消息发送者的 QQ 号"""
@@ -536,7 +537,7 @@ class GroupNameChangeEvent(GroupEvent):
         - Member (annotation): 更改群名称的成员, 权限必定为管理员或是群主
     """
 
-    type = "GroupNameChangeEvent"
+    type: str = "GroupNameChangeEvent"
 
     origin: str
     """原始设定"""
@@ -566,7 +567,7 @@ class GroupEntranceAnnouncementChangeEvent(GroupEvent):
         - Member (annotation, optional): 作出此操作的管理员/群主, 若为 None 则为 Bot 账号操作
     """
 
-    type = "GroupEntranceAnnouncementChangeEvent"
+    type: str = "GroupEntranceAnnouncementChangeEvent"
 
     origin: str
     """原始设定"""
@@ -596,7 +597,7 @@ class GroupMuteAllEvent(GroupEvent):
         - Member (annotation, optional): 作出此操作的管理员/群主, 若为 None 则为 Bot 账号操作
     """
 
-    type = "GroupMuteAllEvent"
+    type: str = "GroupMuteAllEvent"
 
     origin: bool
     """原始设定"""
@@ -626,7 +627,7 @@ class GroupAllowAnonymousChatEvent(GroupEvent):
         - Member (annotation, optional = None): 作出此操作的管理员/群主, 若为 None 则为 Bot 账号操作
     """
 
-    type = "GroupAllowAnonymousChatEvent"
+    type: str = "GroupAllowAnonymousChatEvent"
 
     origin: bool
     """原始设定"""
@@ -656,7 +657,7 @@ class GroupAllowConfessTalkEvent(GroupEvent):
         - Member (annotation, optional = None): 作出此操作的管理员/群主, 若为 None 则为 Bot 账号操作
     """
 
-    type = "GroupAllowConfessTalkEvent"
+    type: str = "GroupAllowConfessTalkEvent"
 
     origin: bool
     """原始设定"""
@@ -686,7 +687,7 @@ class GroupAllowMemberInviteEvent(GroupEvent):
         - Member (annotation, optional = None): 作出此操作的管理员/群主, 若为 None 则为 Bot 账号操作
     """
 
-    type = "GroupAllowMemberInviteEvent"
+    type: str = "GroupAllowMemberInviteEvent"
 
     origin: bool
     """原始设定"""
@@ -716,7 +717,7 @@ class MemberJoinEvent(GroupEvent):
         - Member (annotation): 关于该用户的成员实例
     """
 
-    type = "MemberJoinEvent"
+    type: str = "MemberJoinEvent"
     member: Member
     """加入的成员"""
 
@@ -746,7 +747,7 @@ class MemberLeaveEventKick(GroupEvent):
           - `"operator"` (default, const, str, optional = None): 执行了该操作的管理员/群主, 也可能是 Bot 账号.
     """
 
-    type = "MemberLeaveEventKick"
+    type: str = "MemberLeaveEventKick"
 
     member: Member
     """被从群组删除的成员"""
@@ -769,7 +770,7 @@ class MemberLeaveEventQuit(GroupEvent):
         Member (annotation): 主动退出群组的成员
     """
 
-    type = "MemberLeaveEventQuit"
+    type: str = "MemberLeaveEventQuit"
 
     member: Member
     """主动退出群组的成员"""
@@ -793,7 +794,7 @@ class MemberCardChangeEvent(GroupEvent):
           也可能是 Bot 账号(这时, `operator` 为 `None`).
     """
 
-    type = "MemberCardChangeEvent"
+    type: str = "MemberCardChangeEvent"
 
     origin: str
     """原始群名片"""
@@ -822,7 +823,7 @@ class MemberSpecialTitleChangeEvent(GroupEvent):
         Member (annotation): 被更改群头衔的群组成员
     """
 
-    type = "MemberSpecialTitleChangeEvent"
+    type: str = "MemberSpecialTitleChangeEvent"
 
     origin: str
     """原来的头衔"""
@@ -848,7 +849,7 @@ class MemberPermissionChangeEvent(GroupEvent):
         Member (annotation): 被调整权限的群组成员
     """
 
-    type = "MemberPermissionChangeEvent"
+    type: str = "MemberPermissionChangeEvent"
 
     origin: MemberPerm
     """原来的权限"""
@@ -878,7 +879,7 @@ class MemberMuteEvent(GroupEvent):
           默认返回 `target`.
     """
 
-    type = "MemberMuteEvent"
+    type: str = "MemberMuteEvent"
     duration: int = Field(..., alias="durationSeconds")
     """禁言时长, 单位为秒"""
 
@@ -908,7 +909,7 @@ class MemberUnmuteEvent(GroupEvent):
           默认返回 `target`.
     """
 
-    type = "MemberUnmuteEvent"
+    type: str = "MemberUnmuteEvent"
 
     member: Member
     """被禁言的群员"""
@@ -931,7 +932,7 @@ class MemberHonorChangeEvent(GroupEvent):
         Member (annotation): 获得/失去荣誉的成员
     """
 
-    type = "MemberHonorChangeEvent"
+    type: str = "MemberHonorChangeEvent"
 
     member: Member
     """获得/失去荣誉的成员"""
@@ -999,7 +1000,7 @@ class NewFriendRequestEvent(RequestEvent, FriendEvent):
         3. 拒绝并不再接受来自对方的请求: `await event.rejectAndBlock()`, 具体查看该方法所附带的说明.
     """
 
-    type = "NewFriendRequestEvent"
+    type: str = "NewFriendRequestEvent"
 
     request_id: int = Field(..., alias="eventId")
     """事件标识，响应该事件时的标识"""
@@ -1081,7 +1082,7 @@ class MemberJoinRequestEvent(RequestEvent, GroupEvent):
         5. 忽略并不再接受来自对方的请求: `await event.ignoreAndBlock()`, 具体查看该方法所附带的说明.
     """
 
-    type = "MemberJoinRequestEvent"
+    type: str = "MemberJoinRequestEvent"
 
     request_id: int = Field(..., alias="eventId")
     """事件标识，响应该事件时的标识"""
@@ -1196,7 +1197,7 @@ class BotInvitedJoinGroupRequestEvent(RequestEvent, BotEvent, GroupEvent):
         2. 拒绝请求: `await event.reject()`, 具体查看该方法所附带的说明.
     """
 
-    type = "BotInvitedJoinGroupRequestEvent"
+    type: str = "BotInvitedJoinGroupRequestEvent"
 
     request_id: int = Field(..., alias="eventId")
     """事件标识，响应该事件时的标识"""
@@ -1287,7 +1288,7 @@ class OtherClientOnlineEvent(MiraiEvent):
         Ariadne (annotation): 发布事件的应用实例
     """
 
-    type = "OtherClientOnlineEvent"
+    type: str = "OtherClientOnlineEvent"
 
     client: Client
     """上线的客户端"""
@@ -1306,7 +1307,7 @@ class OtherClientOfflineEvent(MiraiEvent):
         Ariadne (annotation): 发布事件的应用实例
     """
 
-    type = "OtherClientOfflineEvent"
+    type: str = "OtherClientOfflineEvent"
 
     client: Client
     """下线的客户端"""
@@ -1322,7 +1323,7 @@ class CommandExecutedEvent(MiraiEvent):
         Ariadne (annotation): 发布事件的应用实例
     """
 
-    type = "CommandExecutedEvent"
+    type: str = "CommandExecutedEvent"
 
     name: str
     """命令名称"""

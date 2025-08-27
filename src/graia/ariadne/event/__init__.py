@@ -1,4 +1,7 @@
 """Ariadne 的事件"""
+
+from typing import ClassVar
+
 from graia.broadcast import Dispatchable
 
 from ..dispatcher import BaseDispatcher
@@ -11,7 +14,7 @@ class MiraiEvent(Dispatchable, AriadneBaseModel):
     type: str
     """事件类型"""
 
-    Dispatcher = BaseDispatcher
+    Dispatcher: ClassVar = BaseDispatcher
 
 
 from . import lifecycle as lifecycle  # noqa: F401, E402

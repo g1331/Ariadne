@@ -1,9 +1,10 @@
 """用于 Ariadne 数据模型的工具类."""
+
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Literal, Union
 from typing_extensions import NotRequired, TypedDict
 
-from pydantic import BaseConfig, BaseModel, Extra
+from pydantic import BaseModel, ConfigDict
 
 from ..util import snake_to_camel
 
@@ -32,7 +33,7 @@ class AriadneBaseModel(BaseModel):
     ) -> "DictStrAny":
         """转化为字典, 直接向 pydantic 转发."""
         _, *_ = by_alias, exclude_none, skip_defaults
-        data = super().dict(
+        data = self.model_dump(
             include=include,  # type: ignore
             exclude=exclude,  # type: ignore
             by_alias=True,
@@ -44,15 +45,13 @@ class AriadneBaseModel(BaseModel):
             data = {snake_to_camel(k): v for k, v in data.items()}
         return data
 
-    class Config(BaseConfig):
-        """Ariadne BaseModel 设置"""
-
-        extra = Extra.allow
-        arbitrary_types_allowed = True
-        copy_on_model_validation = "none"
-        json_encoders = {
+    model_config = ConfigDict(
+        extra="allow",
+        arbitrary_types_allowed=True,
+        json_encoders={
             datetime: lambda dt: int(dt.timestamp()),
-        }
+        },
+    )
 
 
 class AriadneOptions(TypedDict):

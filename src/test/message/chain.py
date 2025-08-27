@@ -21,9 +21,7 @@ __name__ = "graia.test.message.chain"  # monkey patch to pass internal class che
 
 def test_create():
     chain = MessageChain([Plain("Hello World"), At(12345), Plain("1234567")])
-    assert (
-        MessageChain("Hello World", [At(12345)], MessageChain([Plain("1234567")])).__root__ == chain.__root__
-    )
+    assert MessageChain("Hello World", [At(12345)], MessageChain([Plain("1234567")])).content == chain.content
     assert MessageChain.parse_obj(
         [{"type": "At", "target": 12345}, {"type": "Plain", "text": "hello"}, {"type": "Broken"}]
     ) == MessageChain([At(12345), "hello"])
@@ -128,7 +126,7 @@ def test_as_sendable():
         "  hello!",
     )
     assert not msg_chain.only(Plain)
-    assert msg_chain.as_sendable().__root__ != msg_chain.__root__
+    assert msg_chain.as_sendable().content != msg_chain.content
     assert msg_chain.as_sendable().only(Plain)
 
 
