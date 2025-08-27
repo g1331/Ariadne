@@ -177,6 +177,15 @@ class ActiveMessage(MiraiEvent):
     quote: Optional[Quote] = None
     """可能的引用消息对象"""
 
+    @field_validator("message_chain", mode="before")
+    @classmethod
+    def _validate_message_chain(cls, v):
+        """验证并转换 message_chain 字段，处理从应用层传递的列表数据"""
+        if isinstance(v, list):
+            # 如果是列表（来自应用层或 mirai-api-http），使用 MessageChain.parse_obj 转换
+            return MessageChain.parse_obj(v)
+        return v
+
     __source_quote_setter = model_validator(mode="before")(_set_source_quote)
 
     def __int__(self):
