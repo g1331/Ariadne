@@ -29,8 +29,6 @@ from typing import (
 )
 from typing_extensions import Self
 
-from pydantic.utils import Representation
-
 from graia.broadcast.builtin.derive import Derive, DeriveDispatcher
 from graia.broadcast.entities.decorator import Decorator
 from graia.broadcast.entities.dispatcher import BaseDispatcher
@@ -79,7 +77,7 @@ FORCE = SpacePolicy.FORCE
 # ANCHOR: Match
 
 
-class Match(abc.ABC, Representation):
+class Match(abc.ABC):
     """匹配项抽象基类"""
 
     dest: Union[int, str]
@@ -110,11 +108,22 @@ class Match(abc.ABC, Representation):
     def __rlshift__(self, other: Union[int, str]) -> Self:
         return self.param(other)
 
+    def __repr__(self) -> str:
+        """返回 Match 对象的字符串表示"""
+        class_name = self.__class__.__name__
+        attrs = []
+        if hasattr(self, "dest") and self.dest:
+            attrs.append(f"dest={self.dest!r}")
+        if hasattr(self, "_help") and self._help:
+            attrs.append(f"help={self._help!r}")
+        attrs_str = ", ".join(attrs)
+        return f"{class_name}({attrs_str})" if attrs_str else f"{class_name}()"
+
 
 T_Match = TypeVar("T_Match", bound=Match)
 
 
-class MatchResult(Generic[T, T_Match], Representation):
+class MatchResult(Generic[T, T_Match]):
     """匹配结果"""
 
     __slots__ = ("matched", "result", "origin")
@@ -139,6 +148,11 @@ class MatchResult(Generic[T, T_Match], Representation):
         self.matched = matched
         self.origin = origin
         self.result = result
+
+    def __repr__(self) -> str:
+        """返回 MatchResult 对象的字符串表示"""
+        class_name = self.__class__.__name__
+        return f"{class_name}(matched={self.matched}, result={self.result!r}, origin={self.origin!r})"
 
 
 T_Result = TypeVar("T_Result", bound=MatchResult)
@@ -435,7 +449,7 @@ class ForceResult(MatchResult[T, Match]):
     ...
 
 
-class Sparkle(Representation):
+class Sparkle:
     """Sparkle: Twilight 的匹配容器"""
 
     __slots__ = ("res",)
@@ -468,6 +482,13 @@ class Sparkle(Representation):
 
     def __repr_args__(self):
         return [(repr(k), v) for k, v in self.res.items()]
+
+    def __repr__(self) -> str:
+        """返回 Sparkle 对象的字符串表示"""
+        class_name = self.__class__.__name__
+        args = self.__repr_args__()
+        args_str = ", ".join(f"{k}={v!r}" for k, v in args)
+        return f"{class_name}({args_str})" if args_str else f"{class_name}()"
 
 
 T_Sparkle = TypeVar("T_Sparkle", bound=Sparkle)
