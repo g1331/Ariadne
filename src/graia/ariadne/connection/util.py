@@ -122,4 +122,9 @@ class DatetimeJsonEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime):
             return int(obj.timestamp())
+        # Handle Graia Ariadne message elements and models
+        from ..model.util import AriadneBaseModel
+
+        if isinstance(obj, AriadneBaseModel):
+            return obj.dict()
         return json.JSONEncoder.default(self, obj)
