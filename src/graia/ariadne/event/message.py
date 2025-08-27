@@ -2,7 +2,7 @@
 
 from typing import Any, ClassVar, Dict, List, Optional, Union
 
-from pydantic import Field, root_validator
+from pydantic import Field, model_validator
 
 from graia.amnesia.message import Element
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
@@ -23,7 +23,7 @@ from . import MiraiEvent
 from .mirai import FriendEvent, GroupEvent
 
 
-def _set_source_quote(_, values: Dict[str, Any]) -> Dict[str, Any]:
+def _set_source_quote(values: Dict[str, Any]) -> Dict[str, Any]:
     chain: List[Union[Dict[str, Any], Element]] = values["messageChain"]
     for element in chain[:2]:
         if isinstance(element, dict):
@@ -63,7 +63,7 @@ class MessageEvent(MiraiEvent):
     quote: Optional[Quote] = None
     """可能的引用消息对象"""
 
-    __source_quote_setter = root_validator(pre=True, allow_reuse=True)(_set_source_quote)
+    __source_quote_setter = model_validator(mode="before")(_set_source_quote)
 
     def __int__(self):
         return self.id
@@ -168,7 +168,7 @@ class ActiveMessage(MiraiEvent):
     quote: Optional[Quote] = None
     """可能的引用消息对象"""
 
-    __source_quote_setter = root_validator(pre=True, allow_reuse=True)(_set_source_quote)
+    __source_quote_setter = model_validator(mode="before")(_set_source_quote)
 
     def __int__(self):
         return self.id
