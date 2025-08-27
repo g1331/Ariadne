@@ -141,3 +141,5 @@ tmp/
 release-notes.md
 
 .pdm-python
+
+.idea/
