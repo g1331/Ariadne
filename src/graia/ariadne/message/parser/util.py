@@ -1,4 +1,5 @@
 """消息链处理器用到的工具函数, 类"""
+
 import argparse
 import inspect
 import re
@@ -116,7 +117,7 @@ class ElementType:
     """用于标记类型为消息链元素, 在 ArgumentMatch 上使用"""
 
     def __init__(self, pattern: Type[Element_T]):
-        self.regex = re.compile(f"\x02(\\d+)_{pattern.__fields__['type'].default}\x03")
+        self.regex = re.compile(f"\x02(\\d+)_{pattern.model_fields['type'].default}\x03")
 
     def __call__(self, string: str) -> Element:
         if not self.regex.fullmatch(string):

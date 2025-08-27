@@ -69,7 +69,13 @@ class LogConfig(Dict[Type["MiraiEvent"], Optional[str]]):
             }
         )
         for active_msg_cls in gen_subclass(ActiveMessage):
-            label: str = "[SYNC] " if active_msg_cls.__fields__["sync"].default else "[SEND]"
+            # 处理sync字段：可能在model_fields中，也可能是ClassVar
+            if "sync" in active_msg_cls.model_fields:
+                sync_value = active_msg_cls.model_fields["sync"].default
+            else:
+                # 对于SyncMessage子类，sync是ClassVar
+                sync_value = getattr(active_msg_cls, "sync", False)
+            label: str = "[SYNC] " if sync_value else "[SEND]"
             self[active_msg_cls] = f"{account_seg}: {label}[{{event.subject}}] <- {msg_chain_seg}"
         self.update({sub: extra[sub.__name__] for sub in gen_subclass(MiraiEvent) if sub.__name__ in extra})
 

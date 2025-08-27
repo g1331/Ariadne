@@ -1,4 +1,5 @@
 """Twilight: 混合式消息链处理器"""
+
 import abc
 import contextlib
 import enum
@@ -275,7 +276,7 @@ class ElementMatch(RegexMatch):
 
     @property
     def _src(self) -> str:
-        return f"\x02\\d+_{self.type.__fields__['type'].default}\x03"
+        return f"\x02\\d+_{self.type.model_fields['type'].default}\x03"
 
     def __repr_args__(self):
         return [(None, self.type), ("space", self.space_policy.name), ("flags", self._flags)]
