@@ -1694,7 +1694,7 @@ class Ariadne:
                     CallMethod.POST,
                     {
                         "target": int(target),
-                        "messageChain": message.dict()["__root__"],
+                        "messageChain": message.root,
                         **({"quote": quote} if quote else {}),
                     },
                 )
@@ -1772,7 +1772,7 @@ class Ariadne:
                     CallMethod.POST,
                     {
                         "target": int(target),
-                        "messageChain": message.dict()["__root__"],
+                        "messageChain": message.root,
                         **({"quote": quote} if quote else {}),
                     },
                 )
@@ -1854,7 +1854,7 @@ class Ariadne:
                     {
                         "group": int(group),
                         "qq": int(target),
-                        "messageChain": new_msg.dict()["__root__"],
+                        "messageChain": new_msg.root,
                         **({"quote": quote} if quote else {}),
                     },
                 )
