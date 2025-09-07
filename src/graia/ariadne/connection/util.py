@@ -127,4 +127,7 @@ class DatetimeJsonEncoder(json.JSONEncoder):
 
         if isinstance(obj, AriadneBaseModel):
             return obj.dict()
+        # Handle Enum types
+        if isinstance(obj, Enum):
+            return obj.value
         return json.JSONEncoder.default(self, obj)
