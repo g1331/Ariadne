@@ -3,7 +3,7 @@
 
 [metadata]
 groups = ["default", "dev", "fastapi", "full", "graia", "standard"]
-strategy = ["cross_platform"]
+strategy = []
 lock_version = "4.5.0"
 content_hash = "sha256:ffe34441429b259784ba98c4f1fe54cee8aae51c9ccbec3637f97fdfdfb58a74"
 
