@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any, Literal, Union
 from typing_extensions import NotRequired, TypedDict
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_serializer
 
 from ..util import snake_to_camel
 
@@ -48,10 +48,14 @@ class AriadneBaseModel(BaseModel):
     model_config = ConfigDict(
         extra="allow",
         arbitrary_types_allowed=True,
-        json_encoders={
-            datetime: lambda dt: int(dt.timestamp()),
-        },
     )
+
+    @field_serializer("*", mode="wrap")
+    def _serialize_datetime(self, value, handler, info):
+        """序列化 datetime 对象为时间戳"""
+        if isinstance(value, datetime):
+            return int(value.timestamp())
+        return handler(value)
 
 
 class AriadneOptions(TypedDict):
